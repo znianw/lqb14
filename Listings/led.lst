@@ -1,0 +1,63 @@
+C51 COMPILER V9.59.0.0   LED                                                               05/06/2025 21:07:34 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE LED
+OBJECT MODULE PLACED IN .\Objects\led.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE device\src\led.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\driver\inc;.\device\i
+                    -nc;.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\led.lst) OBJECT(.\Objects\led.obj)
+
+line level    source
+
+   1          #include "led.h"
+   2          #include "hc573.h"
+   3          
+   4          
+   5          
+   6          
+   7          /**
+   8           * @brief 控制指定地址的 LED 点亮或熄灭
+   9           *
+  10           * 该函数根据传入的地址和开关状态控制 LED 的显示。
+  11           * 通过位操作设置 LED 的状态，并仅在状态改变时更新硬件。
+  12           *
+  13           * @param addr LED 的位地址，范围为 0 - 7，对应 8 个 LED
+  14           * @param enable 控制开关，1 表示点亮 LED，0 表示熄灭 LED
+  15           */
+  16          void led_display(unsigned char addr,bit enable)
+  17          {
+  18   1              static unsigned char temp = 0x00;
+  19   1              static unsigned char temp_old = 0xff;
+  20   1              
+  21   1          if(enable) {
+  22   2              temp |= 0x01 <<addr;
+  23   2          }
+  24   1              else  {
+  25   2              temp &= ~(0x01 <<addr);
+  26   2          }
+  27   1      
+  28   1           // 检查当前状态是否与上一次状态不同 如果相同不需要改变LED的状态
+  29   1              if(temp != temp_old) {
+  30   2                      P0 = ~temp;
+  31   2              //SelectHC573(CS_LED);
+  32   2              //调用函数更符合软件开发规范，但是51单片机资源有限，调用函数会增加�
+             -��销，这里直接对P2进行位操作
+  33   2                      P2 = P2 & 0x1f | 0x80;
+  34   2                      P2 &= 0x1f;
+  35   2                      temp_old = temp;
+  36   2              }
+  37   1      }
+  38          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     58    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,1 @@
+"device\src\pcf8591.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\driver\inc;.\device\inc;.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\pcf8591.lst) OBJECT(.\Objects\pcf8591.obj)

@@ -1,0 +1,42 @@
+{
+    "configurations": [
+        {
+            "name": "Target 1",
+            "includePath": [
+                "c:\\Users\\nianwen\\Desktop\\lqb14\\driver\\inc",
+                "c:\\Users\\nianwen\\Desktop\\lqb14\\device\\inc",
+                "c:\\Users\\nianwen\\Desktop\\lqb14\\user",
+                "D:\\Keil_v5\\C51\\INC",
+                "c:\\Users\\nianwen\\Desktop\\lqb14",
+                "c:\\Users\\nianwen\\Desktop\\lqb14\\device\\src",
+                "c:\\Users\\nianwen\\Desktop\\lqb14\\driver\\src"
+            ],
+            "defines": [
+                "__C51__",
+                "__VSCODE_C51__",
+                "reentrant=",
+                "compact=",
+                "small=",
+                "large=",
+                "data=",
+                "idata=",
+                "pdata=",
+                "bdata=",
+                "xdata=",
+                "code=",
+                "bit=char",
+                "sbit=char",
+                "sfr=char",
+                "sfr16=int",
+                "sfr32=int",
+                "interrupt=",
+                "using=",
+                "_at_=",
+                "_priority_=",
+                "_task_="
+            ],
+            "intelliSenseMode": "${default}"
+        }
+    ],
+    "version": 4
+}

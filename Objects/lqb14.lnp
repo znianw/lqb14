@@ -1,0 +1,13 @@
+".\Objects\STARTUP.obj",
+".\Objects\ds18b20.obj",
+".\Objects\hc573.obj",
+".\Objects\key.obj",
+".\Objects\led.obj",
+".\Objects\pcf8591.obj",
+".\Objects\smg.obj",
+".\Objects\timer.obj",
+".\Objects\delay.obj",
+".\Objects\i2c.obj",
+".\Objects\main.obj" 
+TO ".\Objects\lqb14" 
+PRINT(".\Listings\lqb14.m51") RAMSIZE(256) 

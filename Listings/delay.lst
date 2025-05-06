@@ -1,0 +1,61 @@
+C51 COMPILER V9.59.0.0   DELAY                                                             05/06/2025 21:08:19 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Objects\delay.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE driver\src\delay.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\driver\inc;.\device
+                    -\inc;.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\delay.lst) OBJECT(.\Objects\delay.obj)
+
+line level    source
+
+   1          #include "delay.h"
+   2          #include "INTRINS.H"
+   3          
+   4          void delay_ms(unsigned char xms) //可以自己设置延时时间,12MHZ
+   5          {
+   6   1              unsigned char i,j;
+   7   1              for(i=xms;i>0;i--)
+   8   1                for(j=124;j>0;j--);
+   9   1      }
+  10          
+  11          void Delay800ms(void)   //@12.000MHz
+  12          {
+  13   1              unsigned char data i, j, k;
+  14   1      
+  15   1              _nop_();
+  16   1              _nop_();
+  17   1              i = 37;
+  18   1              j = 123;
+  19   1              k = 92;
+  20   1              do
+  21   1              {
+  22   2                      do
+  23   2                      {
+  24   3                              while (--k);
+  25   3                      } while (--j);
+  26   2              } while (--i);
+  27   1      }
+  28          
+  29          void Delay12us(void)    //@12.000MHz
+  30          {
+  31   1              unsigned char data i;
+  32   1      
+  33   1              _nop_();
+  34   1              _nop_();
+  35   1              i = 35;
+  36   1              while (--i);
+  37   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     51    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,150 @@
+C51 COMPILER V9.59.0.0   DS18B20                                                           05/06/2025 21:07:34 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DS18B20
+OBJECT MODULE PLACED IN .\Objects\ds18b20.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE device\src\ds18b20.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\driver\inc;.\devi
+                    -ce\inc;.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\ds18b20.lst) OBJECT(.\Objects\ds18b20.obj)
+
+line level    source
+
+   1          
+   2          #include "ds18b20.h"
+   3          #include "delay.h"
+*** WARNING C318 IN LINE 3 OF device\src\ds18b20.c: can't open file 'delay.h'
+   4          
+   5          
+   6          sbit DQ = P1^4;
+   7          
+   8          /**
+   9           * @brief 为单总线通信提供延时。
+  10           * 
+  11           * 该函数通过循环递减计数器来实现延时，延时时间由传入的参数决定。
+  12           * 计数器先乘以 12 以调整延时精度，然后在循环中递减直至为 0。
+  13           * 
+  14           * @param t 延时时间参数，实际延时时间与该参数值成正比。
+  15           */
+  16          void delay_onewrite(unsigned char t)
+  17          {
+  18   1          unsigned char i = 0;
+  19   1          while(t--) {
+  20   2              for(i = 0; i<12; i++);
+  21   2          }
+  22   1      }
+  23          
+  24          void write_ds18b20(unsigned char dat)
+  25          {
+  26   1          unsigned char i;
+  27   1          for(i = 0; i < 8; i++) {
+  28   2              DQ = 0;
+  29   2              DQ = dat&0x01;
+  30   2              delay_onewrite(5);
+  31   2              DQ = 1;
+  32   2              dat >>= 1;
+  33   2          }
+  34   1          delay_onewrite(5);
+  35   1      }
+  36          
+  37          unsigned char read_ds18b20(void)
+  38          {
+  39   1          unsigned char i;
+  40   1          unsigned char dat;
+  41   1      
+  42   1          for(i = 0; i < 8; i++) {
+  43   2              DQ = 0;
+  44   2              dat >>= 1;
+  45   2              DQ = 1;
+  46   2              if (DQ) {
+  47   3                  dat |= 0x80;
+  48   3              }
+  49   2              delay_onewrite(5);
+  50   2          }
+  51   1      
+  52   1          return dat;
+  53   1      }
+C51 COMPILER V9.59.0.0   DS18B20                                                           05/06/2025 21:07:34 PAGE 2   
+
+  54          
+  55          /**
+  56           * @brief 初始化 DS18B20 温度传感器。
+  57           * 
+  58           * 该函数按照 DS18B20 的初始化时序要求，通过控制单总线 DQ 的电平并结合延时操
+             -作，
+  59           * 完成对 DS18B20 的初始化过程，并返回初始化是否成功的标志位。
+  60           * 
+  61           * @return bit 初始化成功标志位，0 表示初始化失败，1 表示初始化成功。
+  62           */
+  63          bit init_ds18b20(void)
+  64          {
+  65   1          bit initflag = 0;
+  66   1      
+  67   1          DQ = 1;
+  68   1          delay_onewrite(12);
+  69   1      
+  70   1          DQ = 0;
+  71   1          delay_onewrite(80);
+  72   1      
+  73   1          DQ = 1;
+  74   1          delay_onewrite(10);
+  75   1      
+  76   1          initflag = DQ;
+  77   1          delay_onewrite(5);
+  78   1      
+  79   1          return initflag;
+  80   1      }
+  81          
+  82          
+  83          
+  84          /**
+  85           * @brief 读取 DS18B20 温度传感器的温度值。
+  86           * 
+  87           * 该函数通过一系列操作与 DS18B20 温度传感器进行通信，
+  88           * 先启动温度转换，然后读取转换后的温度数据，
+  89           * 最后将读取到的原始数据转换为实际的温度值并返回。
+  90           * 
+  91           * @return float 读取到的温度值，单位为摄氏度。
+  92           */
+  93          float read_tempture(bit first_read_flag)
+  94          {
+  95   1          unsigned char low, high;
+  96   1      
+  97   1              init_ds18b20();
+  98   1          // 发送跳过 ROM 指令，直接对 DS18B20 进行操作
+  99   1              write_ds18b20(0xcc);
+ 100   1          // 发送启动温度转换指令
+ 101   1              write_ds18b20(0x44);
+ 102   1      
+ 103   1          if (first_read_flag)
+ 104   1              Delay800ms();
+*** WARNING C206 IN LINE 104 OF device\src\ds18b20.c: 'Delay800ms': missing function-prototype
+ 105   1              
+ 106   1          // 再次初始化 DS18B20 传感器，准备读取温度数据
+ 107   1              init_ds18b20();
+ 108   1          // 发送跳过 ROM 指令，直接对 DS18B20 进行操作
+ 109   1              write_ds18b20(0xcc);
+ 110   1          // 发送读取温度寄存器指令
+ 111   1              write_ds18b20(0xbe);
+ 112   1          // 读取温度数据的低 8 位
+ 113   1          low = read_ds18b20();
+C51 COMPILER V9.59.0.0   DS18B20                                                           05/06/2025 21:07:34 PAGE 3   
+
+ 114   1          // 读取温度数据的高 8 位
+ 115   1          high = read_ds18b20();
+ 116   1      
+ 117   1          // 将高 8 位和低 8 位数据合并，并除以 16.0 转换为实际的温度值
+ 118   1          return (float)((high << 8) | low) / 16.0;
+ 119   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    191    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       2
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

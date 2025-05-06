@@ -1,0 +1,75 @@
+C51 COMPILER V9.59.0.0   PCF8591                                                           05/06/2025 21:08:19 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PCF8591
+OBJECT MODULE PLACED IN .\Objects\pcf8591.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE device\src\pcf8591.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\driver\inc;.\devi
+                    -ce\inc;.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\pcf8591.lst) OBJECT(.\Objects\pcf8591.obj)
+
+line level    source
+
+   1          #include "pcf8591.h"
+   2          #include "i2c.h"
+   3          
+   4          
+   5          /**
+   6           * @brief 从PCF8591模数转换器读取指定通道的数据
+   7           * 
+   8           * 该函数通过I2C总线与PCF8591通信，发送写地址和通道地址，然后切换到读取模式
+             -，最后读取指定通道的数据
+   9           * 
+  10           * @param addr 要读取的PCF8591通道地址，滑动变阻器或光敏电阻
+  11           * @return unsigned char 从指定通道读取的8位数据 返回的是数字量
+  12           */
+  13          unsigned char PCF8591_Read(unsigned char addr)
+  14          {
+  15   1              unsigned char temp;
+  16   1              I2CStart();
+  17   1              I2CSendByte(PCF8591_WRITE_ADDR);
+  18   1              I2CWaitAck();
+  19   1              I2CSendByte(addr);
+  20   1              I2CWaitAck();
+  21   1              
+  22   1              I2CStart();
+  23   1              I2CSendByte(PCF8591_READ_ADDR);
+  24   1              I2CWaitAck();
+  25   1              temp = I2CReceiveByte();
+  26   1              I2CSendAck(1);
+  27   1              I2CStop();
+  28   1              return temp;
+  29   1      }
+  30          
+  31          
+  32          /**
+  33           * @brief 向PCF8591的数模转换器（DAC）写入数据
+  34           * 
+  35           * 该函数通过I2C总线与PCF8591进行通信，向其DAC写入指定的数据
+  36           * 
+  37           * @param dat 要写入PCF8591 DAC的8位数据，最大255
+  38           */
+  39          void PCF8591_DA_Write(unsigned char dat)
+  40          {
+  41   1          I2CStart();
+  42   1              I2CSendByte(PCF8591_WRITE_ADDR);
+  43   1              I2CWaitAck();
+  44   1              I2CSendByte(0x40);   //使能模拟输出
+  45   1              I2CWaitAck();
+  46   1              I2CSendByte(dat);
+  47   1              I2CWaitAck();
+  48   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     77    ----
+   CONSTANT SIZE    =   ----    ----
+C51 COMPILER V9.59.0.0   PCF8591                                                           05/06/2025 21:08:19 PAGE 2   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

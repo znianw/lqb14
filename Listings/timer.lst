@@ -1,0 +1,52 @@
+C51 COMPILER V9.59.0.0   TIMER                                                             05/06/2025 21:07:35 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Objects\timer.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE device\src\timer.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\driver\inc;.\device
+                    -\inc;.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\timer.lst) OBJECT(.\Objects\timer.obj)
+
+line level    source
+
+   1          #include "timer.h"
+   2          
+   3          
+   4          
+   5          /**
+   6           * @brief 初始化定时器1，使其以1毫秒的间隔产生中断
+   7           *
+   8           * 该函数配置定时器1在12.000MHz晶振下，每1毫秒产生一次中断。
+   9           * 通过设置定时器时钟模式、定时器模式、定时初始值，并使能定时器和中断来�
+             -��现。
+  10           *
+  11           * @param  无
+  12           * @return 无
+  13           */
+  14          void Timer1_Init(void)          //1毫秒@12.000MHz
+  15          {
+  16   1              AUXR &= 0xBF;                   //定时器时钟12T模式
+  17   1              TMOD &= 0x0F;                   //设置定时器模式
+  18   1              TL1 = 0x18;                             //设置定时初始值
+  19   1              TH1 = 0xFC;                             //设置定时初始值
+  20   1              TF1 = 0;                                //清除TF1标志
+  21   1              TR1 = 1;                                //定时器1开始计时
+  22   1          ET1 = 1;                // 使能定时器1中断
+  23   1              EA = 1;                 //开总中断
+  24   1      }
+  25          
+  26          
+  27          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     21    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
