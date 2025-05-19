@@ -3,6 +3,8 @@
 #include "ds18b20.h"
 #include "hc573.h"
 #include "timer.h"
+#include "key.h"
+#include "led.h"
 
 
 
@@ -41,6 +43,9 @@ unsigned int sys_ticks = 0; /**系统时钟滴答 */
 unsigned char trigger_count = 0; /**触发次数 */
 unsigned char pos_index = 0;  /**数码管和LED显示索引 */
 
+
+bit clear_flag = 0;  //数据清楚标志位
+unsigned int time2s = 0;  //2s定时
 void show_process(void);
 
 
@@ -59,7 +64,8 @@ int main()
 {
 	Sys_Init();
 	Timer1_Init();
-	read_tempture(1);   //先读一次温度，内部加了延迟，后续可以read_tempture(0)
+	tempture.temp = read_tempture(1);   //先读一次温度，内部加了延迟，后续可以read_tempture(0)
+	tempture.tempture_prg = 30;
 
 	while(1) {
 		show_process();
@@ -163,6 +169,66 @@ void show_process(void)
 	}
 }
 
+
+void key_process(void)
+{
+	static unsigned char Key_Val, Key_Down, Key_Up, Key_Old;
+    if(sys_ticks % 50 || show_mode == 20) {  
+        return; 
+    }
+    
+    Key_Val = Key_Matrix_Scan();
+
+    /**官方提供的消抖代码 */
+    Key_Down = Key_Val & (Key_Old ^ Key_Val);
+	Key_Up = ~Key_Val & (Key_Old ^ Key_Val);
+	Key_Old = Key_Val;
+
+	 /**0 时间  1 温度回显   2参数界面       10 湿度回显 11时间回显  20温湿度界面*/
+	if (Key_Down == KEY_S4) {//S4
+		if (show_mode == 10 || show_mode == 11 || show_mode == 1) {
+			show_mode = 2;
+		}else if (show_mode == 0) {
+			show_mode = 1;
+		}else if (show_mode == 2) {
+			show_mode = 0;
+		}
+	} else if(Key_Down == KEY_S5) {//S5
+		if (show_mode == 1){
+			show_mode = 10;
+		} else if(show_mode == 10) {
+			show_mode == 11;
+		}else if (show_mode == 11) {
+			show_mode = 1;
+		}
+	}else if (Key_Down == KEY_S8) {
+		if (show_mode == 2) {
+			tempture.tempture_prg++;
+		}
+	}else if (Key_Down == KEY_S9) {
+		if (show_mode == 2) {
+			tempture.tempture_prg--;
+		}else if (show_mode == 11) {
+			//时间回显界面
+			clear_flag = 1;
+		}
+	}
+
+	if (time2s == 2001) { //>2s定时时间
+		clear_flag = 0;
+		time2s = 0;
+		trigger_count = 0;
+	}
+}
+
+void led_process(void)
+{
+	(show_mode == 0) ? (Led_Buf[0] = LED_ON) : (Led_Buf[0] = LED_OFF);
+	(show_mode == 1 || show_mode == 10 || show_mode == 11) ? (Led_Buf[1] = LED_ON) : (Led_Buf[1] = LED_OFF);
+	(show_mode == 20) ? (Led_Buf[1] = LED_ON) : (Led_Buf[1] = LED_OFF);
+
+}
+
 /**
  * @brief 定时器1中断服务函数
  *
@@ -179,5 +245,11 @@ void Timer1_Handler(void) interrupt 3
     pos_index = (++pos_index) % 8;
     smg_display(pos_index, Smg_Buf[pos_index], Smg_Point[pos_index]);
     led_display(pos_index, Led_Buf[pos_index]);
+
+	if (clear_flag == 1) { //清零键被按下
+		if (time2s >= 2000) {
+			time2s = 2001;
+		}
+	}
 }
 
