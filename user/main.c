@@ -5,6 +5,8 @@
 #include "timer.h"
 #include "key.h"
 #include "led.h"
+#include "ds1302.h"
+#include "pcf8591.h"
 
 
 
@@ -22,9 +24,9 @@ Time current_time = {0};
 Time last_time = {0};  //最后一次触发时间
 
 typedef struct {
-	unsigned char temp;
 	unsigned char tempture_max;
 	unsigned char tempture_prg;
+	float temp;
 	float temputre_avg;
 }Tempture;
 Tempture tempture = {0};
@@ -44,8 +46,10 @@ unsigned char trigger_count = 0; /**触发次数 */
 unsigned char pos_index = 0;  /**数码管和LED显示索引 */
 
 
-bit clear_flag = 0;  //数据清楚标志位
+bit clear_flag = 0;  //数据清除标志位
+bit temphum_show_flag = 0;//温湿度显示标志位
 unsigned int time2s = 0;  //2s定时
+unsigned int time3s = 0; //3s定时
 void show_process(void);
 
 
@@ -73,6 +77,58 @@ int main()
 	return 0;
 }
 
+void data_process(void)
+{
+	if (sys_ticks % 20!= 0) return; 
+	ds1302_get_time(&current_time.hour, &current_time.minutes, &current_time.second);
+	
+}
+
+void temphumi_get(void)
+{
+	unsigned char temp_show_mode;
+	/**采集温度 采集湿度，显示温湿度界面 状态锁定 */
+	tempture.temp = read_tempture(0);
+
+	temp_show_mode = show_mode;
+	show_mode = 20;
+
+	Smg_Buf[0] = 14; /*E*/
+	Smg_Buf[1] = 20;
+	Smg_Buf[2] = 20;
+	Smg_Buf[3] = tempture.temp / 10;
+	Smg_Buf[4] = (int)tempture.temp % 10;
+	Smg_Buf[5] = 18;
+	Smg_Buf[6] = humidity.hmdy / 10;
+	Smg_Buf[7] = humidity.hmdy % 10;
+	Smg_Point[6] = 0;
+	/**无效数据的处理 */
+
+	temphum_show_flag = 1;
+	while(time3s != 3001) {
+		//3s时间到
+		show_mode = temp_show_mode;
+		temphum_show_flag = 0;
+		time3s = 0;
+	}
+
+}
+void pcf8591_process(void)
+{
+	static bit light_state_pre = 0; //0暗状态 1亮
+	bit light_state_current;
+	unsigned char vol_temp;
+
+	vol_temp = 255 - PCF8591_Read(0x01);
+
+	/**什么是挡光状态？题目没有说清楚，这里认为小于一半电压就是挡光状态 */
+	if (vol_temp >= 127)  { //亮
+	/**由暗到亮 触发一次温湿度采集 */
+		(light_state_pre == 0 && temphum_show_flag == 0) ? (temphumi_get()) : (light_state_pre = 1);
+	} else {
+		light_state_pre = 0;
+	}
+}
 
 void show_process(void)
 {
@@ -153,7 +209,7 @@ void show_process(void)
 			}
 			
 		break;
-
+#if 0
 		case 20: //温湿度界面
 			Smg_Buf[0] = 14; /*E*/
 			Smg_Buf[1] = 20;
@@ -166,6 +222,7 @@ void show_process(void)
 			Smg_Point[6] = 0;
 			/**无效数据的处理 */
 		break;
+#endif
 	}
 }
 
@@ -249,6 +306,12 @@ void Timer1_Handler(void) interrupt 3
 	if (clear_flag == 1) { //清零键被按下
 		if (time2s >= 2000) {
 			time2s = 2001;
+		}
+	}
+
+	if (temphum_show_flag == 1) {
+		if (time3s >= 3000) {
+			time3s = 3001;
 		}
 	}
 }

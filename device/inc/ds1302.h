@@ -12,4 +12,6 @@ void DS1302_WriteByte(unsigned char addr, unsigned char dat);
 unsigned char Read_Ds1302_Byte ( unsigned char address );
 void Set_time(unsigned char hour, unsigned char min, unsigned char sec);
 
+void ds1302_get_time(unsigned char* hour, unsigned char* min, unsigned char* sec);
+
 #endif
