@@ -47,9 +47,12 @@ unsigned char pos_index = 0;  /**数码管和LED显示索引 */
 
 
 bit clear_flag = 0;  //数据清除标志位
-bit temphum_show_flag = 0;//温湿度显示标志位
+bit temphum_show_flag = 0;//温湿度显示标志位 1显示温湿度界面 0不显示温湿度界面
+bit humi_valid_flag = 0;  //湿度有效标志位  0 有效 1无效
 unsigned int time2s = 0;  //2s定时
 unsigned int time3s = 0; //3s定时
+
+//函数声明
 void show_process(void);
 
 
@@ -99,8 +102,13 @@ void temphumi_get(void)
 	Smg_Buf[3] = tempture.temp / 10;
 	Smg_Buf[4] = (int)tempture.temp % 10;
 	Smg_Buf[5] = 18;
-	Smg_Buf[6] = humidity.hmdy / 10;
-	Smg_Buf[7] = humidity.hmdy % 10;
+
+	if (humi_valid_flag == 0) {
+		Smg_Buf[6] = humidity.hmdy / 10;
+		Smg_Buf[7] = humidity.hmdy % 10;
+	}else {
+		Smg_Buf[6] = Smg_Buf[7] = 10; //"A"
+	}
 	Smg_Point[6] = 0;
 	/**无效数据的处理 */
 
@@ -276,13 +284,20 @@ void key_process(void)
 		time2s = 0;
 		trigger_count = 0;
 	}
+
+	if (Key_Up == KEY_S9) {
+		clear_flag = 0;
+		time2s = 0;
+	}
 }
 
 void led_process(void)
 {
 	(show_mode == 0) ? (Led_Buf[0] = LED_ON) : (Led_Buf[0] = LED_OFF);
 	(show_mode == 1 || show_mode == 10 || show_mode == 11) ? (Led_Buf[1] = LED_ON) : (Led_Buf[1] = LED_OFF);
-	(show_mode == 20) ? (Led_Buf[1] = LED_ON) : (Led_Buf[1] = LED_OFF);
+	(show_mode == 20) ? (Led_Buf[2] = LED_ON) : (Led_Buf[2] = LED_OFF);
+
+	if (tempture.temp > tempture.tempture_prg && sys_ticks % 100 == 0) Led_Buf[3] = ~Led_Buf[3];
 
 }
 
